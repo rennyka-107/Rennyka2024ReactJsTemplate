@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "types": ["vite/client"],
+      "jsx": "react-jsx",
+      "module": "ESNext",
+      "target": "ESNext",
+      "esModuleInterop": true,
+      "moduleResolution": "node",
+      "baseUrl": ".",
+      "paths": {
+        "@/*": ["src/*"],
+        "@components/*": ["src/components/*"],
+        "@assets/*": ["public/assets/*"]
+      },
+    },
+    "include": ["src", "vite.config.*"],
+  }
