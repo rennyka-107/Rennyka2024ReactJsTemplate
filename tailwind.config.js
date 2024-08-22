@@ -67,8 +67,7 @@ export default {
         'size-base': '14px',
         'size-medium': '15px',
         'size-large': '16px'
-      }
-      
+      },
     },
   },
   plugins: [],
