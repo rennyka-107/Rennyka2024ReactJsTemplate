@@ -62,6 +62,11 @@ export default {
       },
       boxShadow: {
         'white-sm': '0px 4px 4px 0px rgba(0, 0, 0, 0.05)'
+      },
+      fontSize: {
+        'size-base': '14px',
+        'size-medium': '15px',
+        'size-large': '16px'
       }
       
     },
