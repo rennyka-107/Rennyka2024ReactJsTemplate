@@ -2,11 +2,12 @@ import { Route, Routes } from "react-router-dom";
 import { Suspense } from "react";
 import AuthenticateRouter from "@/pages/authenticate/router";
 import { v4 as uuidv4 } from "uuid";
+import LoginPage from "@/pages/authenticate/login";
 
 const routes = [
   {
     path: "/",
-    element: <div>1123</div>,
+    element: <LoginPage />,
     private: true,
   },
   ...AuthenticateRouter,
