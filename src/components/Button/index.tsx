@@ -5,12 +5,13 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   uiType?: "secondary" | "white";
   uiSize?: "medium" | "large";
   twClassAddition?: string;
+  twColor?: string;
 };
 
-const BaseButton = ({title, uiSize, uiType, twClassAddition, ...buttonProps}: Props) => {
+const BaseButton = ({title, uiSize, uiType, twClassAddition, twColor = "denim", ...buttonProps}: Props) => {
   if (uiType === "secondary") {
     return (
-      <button className={`hover:bg-denim-500 hover:text-white bg-white border-[1px] border-denim-500 ${uiSize ? uiSize === "medium" ? "px-[18px] py-[10px]" : "px-5 py-3" : "px-4 py-2" } rounded-radius-6 text-denim-500 font-medium text-[14px] ` + twClassAddition} {...buttonProps}>
+      <button className={`hover:bg-${twColor}-500 hover:text-white bg-white border-[1px] border-${twColor}-500 ${uiSize ? uiSize === "medium" ? "px-[18px] py-[10px]" : "px-5 py-3" : "px-4 py-2" } rounded-radius-6 text-${twColor}-500 font-medium text-[14px] ` + twClassAddition} {...buttonProps}>
         {title}
       </button>
     );
@@ -23,7 +24,7 @@ const BaseButton = ({title, uiSize, uiType, twClassAddition, ...buttonProps}: Pr
     );
   }
   return (
-    <button className={`hover:bg-denim-950 bg-denim-600 ${uiSize ? uiSize === "medium" ? "px-[18px] py-[10px]" : "px-5 py-3" : "px-4 py-2" } rounded-radius-6 text-white font-medium text-[14px] ` + twClassAddition} {...buttonProps}>
+    <button className={`hover:bg-${twColor}-950 bg-${twColor}-600 ${uiSize ? uiSize === "medium" ? "px-[18px] py-[10px]" : "px-5 py-3" : "px-4 py-2" } rounded-radius-6 text-white font-medium text-[14px] ` + twClassAddition} {...buttonProps}>
       {title}
     </button>
   );
