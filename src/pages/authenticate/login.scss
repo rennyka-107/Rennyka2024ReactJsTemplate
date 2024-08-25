@@ -1,5 +1,27 @@
 .glass-area {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
     backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    box-shadow: 0 8px 32px 0 rgba(255, 0, 167, 0.37);
+}
+
+.button-shadow {
+    box-shadow: 1px 1px 25px 10px rgba(146, 148, 248, 0.4);
+    position: relative;
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(120deg,
+                transparent,
+                rgba(146, 148, 248, 0.4),
+                transparent);
+        transition: all 650ms;
+    }
+}
+
+.button-shadow:hover::before {
+    left: 100%;
 }

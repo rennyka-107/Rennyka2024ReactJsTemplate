@@ -12,24 +12,24 @@ interface IFormLogin {
 }
 
 const LoginPage = (props: Props) => {
-  const { handleSubmit, control, reset } = useForm<IFormLogin>({
+  const { handleSubmit, control, reset, watch } = useForm<IFormLogin>({
     defaultValues: {
       username: "",
       password: "",
     },
   });
-  const onSubmit: SubmitHandler<IFormLogin> = (data) => console.log(data);
 
   async function login() {
-    try {
-      const res = await axios.post("http://localhost:7777/api/v1/auth/login", {
-        username: "admin",
-        password: "123456",
-      });
-      console.log(res, "res");
-    } catch (err) {
-      console.log(err, "Err");
-    }
+    console.log(watch(), "wat")
+    // try {
+    //   const res = await axios.post("http://localhost:7777/api/v1/auth/login", {
+    //     username: "admin",
+    //     password: "123456",
+    //   });
+    //   console.log(res, "res");
+    // } catch (err) {
+    //   console.log(err, "Err");
+    // }
   }
 
   async function getUsers() {
@@ -44,8 +44,7 @@ const LoginPage = (props: Props) => {
   return (
     <div className="w-full h-[100vh] flex justify-center items-center bg-[url('/assets/bg-3.jpg')] bg-no-repeat bg-full">
       <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="w-1/4 flex flex-col justify-center mx-auto gap-2 py-[2rem] px-[2rem] rounded-[16px] glass-area"
+        className="desktop:w-1/4 laptop:w-1/2 tablet:w-1/2 w-2/3 flex flex-col justify-center mx-auto gap-2 py-[2rem] px-[2rem] rounded-[16px] glass-area"
       >
         <div className="">
           <img src="/assets/tachyon-purple.png" />
@@ -73,23 +72,23 @@ const LoginPage = (props: Props) => {
           control={control}
           rules={{ required: true }}
           render={({ field }) => (
-            <BaseInput label="password" twColor="purple" />
+            <BaseInput label="password" twColor="purple" type="password" />
           )}
         />
         <BaseButton
           title="Login"
-          twClassAddition="mt-2"
+          twClassAddition="mt-2 button-shadow"
           twColor="purple"
           onClick={login}
           type="button"
         />
-        <BaseButton
+        {/* <BaseButton
           title="Register"
           twClassAddition="mt-2"
           twColor="purple"
           onClick={login}
           type="button"
-        />
+        /> */}
       </form>
     </div>
   );

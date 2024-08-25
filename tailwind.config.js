@@ -2,6 +2,11 @@
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
+    screens: {
+      'desktop': '1280px',
+      'laptop': '1024px',
+      'tablet': '720px',
+    },
     extend: {
       colors: {
         "purple-50": "#fbf7fd",
