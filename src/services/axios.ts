@@ -1,21 +1,24 @@
-import axios from 'axios';
-import queryString from 'query-string'
+import { useUserStore } from "@/pages/authenticate/state";
+import axios from "axios";
+import queryString from "query-string";
+import { unstable_batchedUpdates } from "react-dom";
 
-const axiosClient = axios.create({
+const axios_client = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   paramsSerializer: (params) => queryString.stringify(params),
 });
 
-axiosClient.defaults.timeout = 3000;
+axios_client.defaults.timeout = 3000;
 
 // Add a request interceptor
-axiosClient.interceptors.request.use(
+axios_client.interceptors.request.use(
   function (config) {
-    // Do something before request is sent
-    const user = localStorage.getItem("user");
-    if (user) {
-      const { token } = JSON.parse(user);
-      config.headers.Authorization = "Bear " + token;
+    const access_token = unstable_batchedUpdates(() => {
+      return useUserStore.getState().access_token;
+    });
+
+    if (access_token) {
+      config.headers.Authorization = "Bearer " + access_token;
     }
 
     return config;
@@ -27,7 +30,7 @@ axiosClient.interceptors.request.use(
 );
 
 // Add a response interceptor
-axiosClient.interceptors.response.use(
+axios_client.interceptors.response.use(
   function (response) {
     // Any status code that lie within the range of 2xx cause this function to trigger
     // Do something with response data
@@ -40,4 +43,4 @@ axiosClient.interceptors.response.use(
   }
 );
 
-export default axiosClient;
+export default axios_client;

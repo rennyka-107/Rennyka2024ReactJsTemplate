@@ -24,7 +24,7 @@ const BaseButton = ({title, uiSize, uiType, twClassAddition, twColor = "denim", 
     );
   }
   return (
-    <button className={`hover:bg-${twColor}-950 bg-${twColor}-600 ${uiSize ? uiSize === "medium" ? "px-[18px] py-[10px]" : "px-5 py-3" : "px-4 py-2" } rounded-radius-6 text-white font-medium text-[14px] ` + twClassAddition} {...buttonProps}>
+    <button className={`hover:bg-${twColor}-700 bg-${twColor}-600 ${uiSize ? uiSize === "medium" ? "px-[18px] py-[10px]" : "px-5 py-3" : "px-4 py-2" } rounded-radius-6 text-white font-medium text-[14px] ` + twClassAddition} {...buttonProps}>
       {title}
     </button>
   );
