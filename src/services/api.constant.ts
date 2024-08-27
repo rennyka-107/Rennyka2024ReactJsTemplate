@@ -1,6 +1,7 @@
 export const _API_ = {
     AUTH: {
-        LOGIN: "auth/login"
+        LOGIN: "auth/login",
+        GET_USER_INFORMATION: "auth/get-user-information"
     }
 }
 

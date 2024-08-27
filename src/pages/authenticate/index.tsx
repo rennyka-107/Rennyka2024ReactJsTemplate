@@ -5,6 +5,7 @@ import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import "./style.scss";
 import { ILoginRequest, useUserStore } from "./state";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 type Props = {};
 
@@ -17,28 +18,18 @@ const LoginPage = (props: Props) => {
   });
   const navigate = useNavigate();
 
-  const login = useUserStore((state) => state.login);
+  const { login, is_logged } = useUserStore();
 
-  async function onSubmit(values: ILoginRequest) {
-    const { success, message } = await login(values);
-    if(success) {
+  useEffect(() => {
+    if (is_logged) {
       navigate("/");
     }
-  }
-
-  async function getUsers() {
-    try {
-      const res = await axios.get("http://localhost:7777/api/v1/users/list");
-      console.log(res, "res user");
-    } catch (err) {
-      console.log(err, "Err");
-    }
-  }
+  }, [is_logged]);
 
   return (
     <div className="w-full h-[100vh] flex justify-center items-center bg-[url('/assets/bg-3.jpg')] bg-no-repeat bg-full">
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(login)}
         className="desktop:w-1/4 laptop:w-1/2 tablet:w-1/2 w-2/3 flex flex-col justify-center mx-auto gap-2 py-[2rem] px-[2rem] rounded-[16px] glass-area"
       >
         <div className="">

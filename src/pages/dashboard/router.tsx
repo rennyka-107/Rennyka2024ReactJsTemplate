@@ -1,10 +1,15 @@
+import MasterLayout from "@/layouts/master";
 import DashboardPage from ".";
 
 const DashboardRouter = [
   {
     path: "/",
-    element: <DashboardPage />,
-    private: true
+    element: (
+      <MasterLayout>
+        <DashboardPage />
+      </MasterLayout>
+    ),
+    private: true,
   },
 ];
 

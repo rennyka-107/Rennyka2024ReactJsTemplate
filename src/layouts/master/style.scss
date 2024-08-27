@@ -1,0 +1,22 @@
+.child-nav::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 28px;
+    top: -15px;
+    transform: rotate(45deg);
+    z-index: 1;
+    background: white;
+    border-top: 1px solid #f5ecfb;
+    border-left: 1px solid #f5ecfb;
+}
+
+.child-nav {
+    display: none;
+}
+
+.parent-nav:hover + .child-nav {
+    display: flex;
+    flex-direction: column;
+}
