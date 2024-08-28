@@ -1,10 +1,11 @@
 import IconAcount from "@/components/Icon/acount";
+import IconArrow from "@/components/Icon/arrow";
 import IconHome from "@/components/Icon/home";
 import IconNote from "@/components/Icon/note";
 import IconReport from "@/components/Icon/report";
 import IconSetting from "@/components/Icon/setting";
 import { useUserStore } from "@/pages/authenticate/state";
-import { JSX, useEffect } from "react";
+import { JSX, MouseEventHandler, useEffect, useState } from "react";
 
 interface INavbar {
   route: string;
@@ -15,7 +16,12 @@ interface INavbar {
 
 const ListNavbar: INavbar[] = [
   { route: "/", label: "Trang chủ", icon: <IconHome /> },
-  { route: "/users", label: "Người dùng", icon: <IconAcount /> },
+  {
+    route: "/users",
+    label: "Người dùng",
+    icon: <IconAcount />,
+    childrens: [{ route: "/users/list", label: "Danh sách người dùng" }],
+  },
   {
     route: "/diaries",
     label: "Nhật ký",
@@ -26,9 +32,17 @@ const ListNavbar: INavbar[] = [
         label: "Nhật ký công việc",
         childrens: [
           { route: "/work-diaries/list", label: "Danh sách công việc" },
+          { route: "/work-diaries/create", label: "Tạo mới công việc" },
         ],
       },
-      { route: "/produre-diaries", label: "Nhật ký sản xuất" },
+      {
+        route: "/produre-diaries",
+        label: "Nhật ký sản xuất",
+        childrens: [
+          { route: "/produre-diaries/list", label: "Danh sách sản xuất" },
+          { route: "/produre-diaries/create", label: "Tạo mới sản xuất" },
+        ],
+      },
     ],
   },
   { route: "/reports", label: "Báo cáo", icon: <IconReport /> },
@@ -37,6 +51,9 @@ const ListNavbar: INavbar[] = [
 
 const MasterHeader = () => {
   const { user, getUserInformation } = useUserStore();
+  const [chooseNav, setChooseNav] = useState<string>("");
+
+  const selectNav = (route: string) => () => setChooseNav(route);
 
   useEffect(() => {
     if (!user) {
@@ -59,17 +76,44 @@ const MasterHeader = () => {
         <div className="flex items-center text-size-medium text-[#000000] gap-8">
           {ListNavbar.map((it) => (
             <div
+              onClick={selectNav(it.route)}
               key={it.label + "-" + it.route}
-              className="parent-nav flex items-center gap-2 py-2 px-4 hover:bg-purple-100 hover:rounded-[50px] relative"
+              className={`parent-nav flex items-center gap-2 py-2 px-4 ${
+                chooseNav === it.route ? "bg-purple-100 rounded-[50px]" : ""
+              } hover:bg-purple-100 hover:rounded-[50px] relative`}
             >
               {it.icon} {it.label}
               {it.childrens && it.childrens.length > 0 && (
-                <div className="gap-2 child-nav bottom-[-8rem] bg-white px-6 py-4 w-[360px] left-0 rounded-lg border border-purple-100 absolute shadow-[0px_4px_4px_0px_#f5ecfb]">
-                  {it.childrens.map((sn) => (
-                    <div className="border-l-2 border-purple-500 p-2 bg-purple-100 rounded-[0_4px_4px_0]" key={sn.label + "-" + sn.route}>{sn.label}</div>
-                  ))}
+                <div
+                  className={`${
+                    chooseNav === it.route ? "flex" : ""
+                  } gap-2 child-nav top-[3rem] bg-white px-6 py-4 left-0 rounded-lg border border-purple-100 absolute shadow-[0px_4px_4px_0px_#f5ecfb]`}
+                >
+                  <div className="flex flex-col gap-2 w-[240px]">
+                    {it.childrens.map((sn) => (
+                      <div
+                        className="nested-nav border-l-2 border-purple-500 p-2 hover:bg-purple-100 rounded-[0_4px_4px_0] relative"
+                        key={sn.label + "-" + sn.route}
+                      >
+                        {sn.label}
+                        {sn.childrens && sn.childrens.length > 0 && (
+                          <div className="child-nested-nav left-[110%] top-0 gap-2 w-[240px] absolute">
+                            {sn.childrens.map((snc) => (
+                              <div
+                                className="border-l-2 border-purple-500 p-2 bg-purple-100 rounded-[0_4px_4px_0] relative"
+                                key={snc.label + "-" + snc.route}
+                              >
+                                {snc.label}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
+              {it.childrens && it.childrens.length > 0 && <IconArrow />}
             </div>
           ))}
         </div>

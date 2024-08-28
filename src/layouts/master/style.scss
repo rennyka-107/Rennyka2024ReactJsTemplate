@@ -4,7 +4,7 @@
     width: 16px;
     height: 16px;
     left: 28px;
-    top: -15px;
+    top: -8px;
     transform: rotate(45deg);
     z-index: 1;
     background: white;
@@ -16,7 +16,15 @@
     display: none;
 }
 
-.parent-nav:hover + .child-nav {
+.parent-nav:hover .child-nav {
+    display: flex;
+}
+
+.child-nested-nav {
+    display: none;
+}
+
+.nested-nav:hover .child-nested-nav {
     display: flex;
     flex-direction: column;
 }
