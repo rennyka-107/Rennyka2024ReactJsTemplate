@@ -31,7 +31,14 @@ const ListNavbar: INavbar[] = [
         route: "/work-diaries",
         label: "Nhật ký công việc",
         childrens: [
-          { route: "/work-diaries/list", label: "Danh sách công việc" },
+          {
+            route: "/work-diaries/list",
+            label: "Danh sách công việc",
+            childrens: [
+              { route: "/work1", label: "CV1" },
+              { route: "/work2", label: "CV2" },
+            ],
+          },
           { route: "/work-diaries/create", label: "Tạo mới công việc" },
         ],
       },
@@ -52,6 +59,7 @@ const ListNavbar: INavbar[] = [
 const MasterHeader = () => {
   const { user, getUserInformation } = useUserStore();
   const [chooseNav, setChooseNav] = useState<string>("");
+  const [numShowChild, setNumShowChild] = useState(0);
 
   const selectNav = (route: string) => () => setChooseNav(route);
 
@@ -60,6 +68,38 @@ const MasterHeader = () => {
       getUserInformation();
     }
   }, [user]);
+
+  const calculateWidthRenderAnimation = () => {
+    console.log(123)
+    let num = 0;
+    const list_child_nested = Array.from(
+      document.getElementsByClassName("child-nested-nav")
+    );
+    list_child_nested.forEach((node: HTMLElement) => {
+      if (getComputedStyle(node).display === "flex") {
+        num += 1;
+      }
+    });
+    setNumShowChild(num * 264);
+  };
+
+  const renderChildNav = (itemNav: INavbar) => {
+    return (
+      <div
+        onMouseOver={() => calculateWidthRenderAnimation()}
+        onMouseOut={() => calculateWidthRenderAnimation()}
+        className="nested-nav border-l-2 border-purple-500 p-2 hover:bg-purple-100 rounded-[0_4px_4px_0]"
+        key={itemNav.label + "-" + itemNav.route}
+      >
+        {itemNav.label}
+        {itemNav.childrens && itemNav.childrens.length > 0 && (
+          <div className="child-nested-nav left-[100%] top-0 gap-2 w-[240px] absolute">
+            {itemNav.childrens.map((snc) => renderChildNav(snc))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="h-[80px] border-b-[1px] border-purple-500 px-8 py-6 flex items-center justify-between">
@@ -85,31 +125,14 @@ const MasterHeader = () => {
               {it.icon} {it.label}
               {it.childrens && it.childrens.length > 0 && (
                 <div
-                  className={`${
-                    chooseNav === it.route ? "flex" : ""
+                  className={`w-[${10 + numShowChild}rem] ${
+                    chooseNav === it.route ? "block" : ""
                   } gap-2 child-nav top-[3rem] bg-white px-6 py-4 left-0 rounded-lg border border-purple-100 absolute shadow-[0px_4px_4px_0px_#f5ecfb]`}
                 >
-                  <div className="flex flex-col gap-2 w-[240px]">
-                    {it.childrens.map((sn) => (
-                      <div
-                        className="nested-nav border-l-2 border-purple-500 p-2 hover:bg-purple-100 rounded-[0_4px_4px_0] relative"
-                        key={sn.label + "-" + sn.route}
-                      >
-                        {sn.label}
-                        {sn.childrens && sn.childrens.length > 0 && (
-                          <div className="child-nested-nav left-[110%] top-0 gap-2 w-[240px] absolute">
-                            {sn.childrens.map((snc) => (
-                              <div
-                                className="border-l-2 border-purple-500 p-2 bg-purple-100 rounded-[0_4px_4px_0] relative"
-                                key={snc.label + "-" + snc.route}
-                              >
-                                {snc.label}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                  <div className="relative">
+                    <div className="flex flex-col gap-2 w-[240px]">
+                      {it.childrens.map((sn) => renderChildNav(sn))}
+                    </div>
                   </div>
                 </div>
               )}

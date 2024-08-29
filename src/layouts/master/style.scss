@@ -17,14 +17,14 @@
 }
 
 .parent-nav:hover .child-nav {
-    display: flex;
+    display: block;
 }
 
 .child-nested-nav {
     display: none;
 }
 
-.nested-nav:hover .child-nested-nav {
+.nested-nav:hover > .child-nested-nav {
     display: flex;
     flex-direction: column;
 }
