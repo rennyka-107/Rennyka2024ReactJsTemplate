@@ -5,7 +5,7 @@ import { Navigate } from 'react-router-dom'
 const PrivatePage = ({children}: React.PropsWithChildren) => {
     const is_logged = useUserStore((state) =>state.is_logged);
     if(!is_logged) {
-        return <Navigate to={"/login"} />
+        return <Navigate to={"/chat"} />
     }
     return <>{children}</>
 }

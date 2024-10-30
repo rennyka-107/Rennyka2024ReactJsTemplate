@@ -1,13 +1,22 @@
 .user-message {
-    color: red;
-    width: 45%;
+    // max-width: 50%;
+    width: fit-content;
     word-break: break-word;
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    flex-direction: row-reverse;
+    color: rgb(216, 7, 104)
 }
 
 .bot-message {
-    color: green;
-    width: 45%;
+    // max-width: 50%;
+    width: fit-content;
     word-break: break-word;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    color: #525252;
 }
 
 .detail-chat {
@@ -16,8 +25,21 @@
     margin-top: 1rem;
 }
 
+.final-block {
+    // width: 100%;
+    flex: 1 1 0;
+    display: flex;
+    scrollbar-width: none;
+}
+
 .chat-container {
-    width: 80%;
+    width: 100%;
+    flex: 1 1 0;
+    background-color: #F8F8F8;
+    border-radius: 30px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
 }
 
 .main-chat {
@@ -26,10 +48,111 @@
     justify-content: center;
     flex-direction: column;
     align-items: center;
+    scrollbar-width: none;
 }
 
 .input-container {
     display: flex;
     justify-content: space-between;
+    position: relative;
 }
 
+.chat-box {
+    flex: 1 1 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+
+// .markdown-container {
+//     font-family: Arial, sans-serif;
+//     line-height: 1.6;
+//     background-color: #f9f9f9;
+//     padding: 20px;
+//     border-radius: 8px;
+//     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+// }
+
+.markdown-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.markdown-container {
+
+    ol,
+    ul {
+        width: 100%;
+
+        li {
+            background-color: #f0f0f0;
+            /* Màu nền */
+            margin: 5px 0;
+            /* Khoảng cách giữa các mục */
+            padding: 10px 15px;
+            /* Padding cho các mục */
+            border-radius: 5px;
+            /* Bo góc */
+            transition: background-color 0.3s;
+            color: rgb(204, 9, 90)
+        }
+    }
+}
+
+li {
+    background-color: #f0f0f0;
+    /* Màu nền */
+    margin: 5px 0;
+    /* Khoảng cách giữa các mục */
+    padding: 10px 15px;
+    /* Padding cho các mục */
+    border-radius: 5px;
+    /* Bo góc */
+    transition: background-color 0.3s;
+    color: rgb(204, 9, 90)
+}
+
+.markdown-container h1,
+.markdown-container h2,
+.markdown-container h3 {
+    color: #333;
+}
+
+.markdown-container li,
+.markdown-container li blockquote {
+    color: rgb(204, 9, 90)
+}
+
+.markdown-container li {
+    background-color: #f0f0f0;
+    /* Màu nền */
+    margin: 5px 0;
+    /* Khoảng cách giữa các mục */
+    padding: 10px 15px;
+    /* Padding cho các mục */
+    border-radius: 5px;
+    /* Bo góc */
+    transition: background-color 0.3s;
+}
+
+// .markdown-container p {
+//     color: #555;
+//     margin: 10px 0;
+// }
+
+.markdown-container pre {
+    background-color: #ecfdf7;
+    color: #f8f8f2;
+    padding: 10px;
+    border-radius: 4px;
+    overflow: auto;
+    width: 100%;
+}
+
+.markdown-container code {
+    // background-color: #f1f1f1;
+    color: #03b67a;
+    padding: 2px 4px;
+    border-radius: 4px;
+}

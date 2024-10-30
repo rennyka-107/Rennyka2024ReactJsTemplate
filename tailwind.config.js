@@ -75,7 +75,8 @@ export default {
       },
       backgroundSize: {
         "full": "100% 100%;"
-      }
+      },
+      
     },
   },
   plugins: [],
