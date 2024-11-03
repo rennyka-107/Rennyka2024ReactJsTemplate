@@ -3,10 +3,10 @@
     width: fit-content;
     word-break: break-word;
     display: flex;
-    align-items: center;
+    align-items: start;
     justify-content: end;
     flex-direction: row-reverse;
-    color: rgb(216, 7, 104)
+    color: #525252;
 }
 
 .bot-message {
@@ -14,7 +14,7 @@
     width: fit-content;
     word-break: break-word;
     display: flex;
-    align-items: center;
+    align-items: start;
     justify-content: start;
     color: #525252;
 }
@@ -32,12 +32,19 @@
     scrollbar-width: none;
 }
 
+.head-chat {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
 .chat-container {
     width: 100%;
     flex: 1 1 0;
-    background-color: #F8F8F8;
-    border-radius: 30px;
-    padding: 15px;
+    // background-color: #F8F8F8;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border: 1px solid #F4F4F4;
+    // padding: 32px;
     display: flex;
     flex-direction: column;
 }
@@ -52,9 +59,11 @@
 }
 
 .input-container {
+    width: 100%;
+    gap: 8px;
     display: flex;
     justify-content: space-between;
-    position: relative;
+    // position: relative;
 }
 
 .chat-box {
@@ -77,6 +86,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+
+    p {
+        width: 100%;
+    }
 }
 
 .markdown-container {
@@ -84,33 +97,35 @@
     ol,
     ul {
         width: 100%;
-
+        margin-top: 1rem;
+        margin-bottom: 1rem;
         li {
-            background-color: #f0f0f0;
+            // font-weight: 800;
+            // background-color: #f0f0f0;
             /* Màu nền */
-            margin: 5px 0;
+            // margin: 5px 0;
             /* Khoảng cách giữa các mục */
-            padding: 10px 15px;
+            // padding: 10px 15px;
             /* Padding cho các mục */
             border-radius: 5px;
             /* Bo góc */
             transition: background-color 0.3s;
-            color: rgb(204, 9, 90)
+            // color: rgb(204, 9, 90)
         }
     }
 }
 
 li {
-    background-color: #f0f0f0;
+    // background-color: #f0f0f0;
     /* Màu nền */
-    margin: 5px 0;
+    // margin: 5px 0;
     /* Khoảng cách giữa các mục */
-    padding: 10px 15px;
+    // padding: 10px 15px;
     /* Padding cho các mục */
     border-radius: 5px;
     /* Bo góc */
     transition: background-color 0.3s;
-    color: rgb(204, 9, 90)
+    // color: rgb(204, 9, 90)
 }
 
 .markdown-container h1,
@@ -119,21 +134,21 @@ li {
     color: #333;
 }
 
-.markdown-container li,
-.markdown-container li blockquote {
-    color: rgb(204, 9, 90)
-}
+// .markdown-container li,
+// .markdown-container li blockquote {
+//     color: rgb(204, 9, 90)
+// }
 
 .markdown-container li {
-    background-color: #f0f0f0;
+    // background-color: #f9f9f9;
     /* Màu nền */
-    margin: 5px 0;
+    // margin: 5px 0;
     /* Khoảng cách giữa các mục */
-    padding: 10px 15px;
+    // padding: 10px 15px;
     /* Padding cho các mục */
     border-radius: 5px;
     /* Bo góc */
-    transition: background-color 0.3s;
+    // transition: background-color 0.3s;
 }
 
 // .markdown-container p {
@@ -142,9 +157,11 @@ li {
 // }
 
 .markdown-container pre {
-    background-color: #ecfdf7;
-    color: #f8f8f2;
-    padding: 10px;
+    background-color: #f9f9f9;
+    // color: #f8f8f2;
+    padding: 8px 16px;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
     border-radius: 4px;
     overflow: auto;
     width: 100%;
@@ -152,7 +169,20 @@ li {
 
 .markdown-container code {
     // background-color: #f1f1f1;
-    color: #03b67a;
-    padding: 2px 4px;
+    // color: #03b67a;
     border-radius: 4px;
+    padding: 0 !important;
+    color: #31333F;
+}
+
+.hljs {
+    background-color: #F8F9FB !important;
+}
+
+.hljs-keyword {
+    color: #1C83E1 !important;
+}
+
+.hljs-string {
+    color: #09AB3B !important;
 }
