@@ -1,3 +1,4 @@
+import 'babel-polyfill';
 import "./App.css";
 import RouteList from "./routers";
 import { BrowserRouter } from "react-router-dom";

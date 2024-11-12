@@ -1,12 +1,18 @@
 import { io } from "socket.io-client";
 import "./style.scss";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import LineChat from "./line-chat";
 import { useUserStore } from "../authenticate/state";
+import IconChat from "@/components/Icon/chat";
+import IconLike from "@/components/Icon/like";
+import IconSetting from "@/components/Icon/setting";
+import IconLogout from "@/components/Icon/logout";
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 
 // const socket = io("http://192.168.1.222:8111", {
-const socket = io("http://210.245.49.84:8111", {
+const socket = io("wss://apivpb.vtrusted.vn", {
+// const socket = io("http://210.245.49.84:8111", {
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,
   timeout: 300000,
@@ -14,10 +20,73 @@ const socket = io("http://210.245.49.84:8111", {
 })
 
 const ChatPage = () => {
-  const [messages, setMessages] = useState<{ sender: 'bot' | 'user', text: string, id: string }[]>([]);
+  const [messages, setMessages] = useState<{ sender: 'bot' | 'user', text: string, id: string, isReply?: boolean }[]>([]);
   const [userMessage, setUserMessage] = useState('');
+  const [chooseTab, setChooseTab] = useState<'chat' | 'favorite' | 'setting'>('chat')
+  const { user, logout } = useUserStore();
+  const [isListening, setIsListening] = useState(false);
+  const silenceTimer = useRef<any>(null);
+  const { transcript, resetTranscript, browserSupportsSpeechRecognition } = useSpeechRecognition();
 
-  const user = useUserStore(state => state.user);
+  if (!browserSupportsSpeechRecognition) {
+    console.log("Trình duyệt của bạn không hỗ trợ nhận diện giọng nói")
+    return <span>Trình duyệt của bạn không hỗ trợ nhận diện giọng nói.</span>;
+  }
+
+  const startListening = () => {
+    console.log("start", transcript)
+    resetTranscript();
+    setIsListening(true);
+    SpeechRecognition.startListening({ language: 'vi-VN', continuous: true });
+  };
+
+  const stopListening = () => {
+    SpeechRecognition.stopListening();
+    // setIsListening(false);
+    console.log("stop", transcript)
+    clearTimeout(silenceTimer.current); // Xóa timer nếu đang nghe
+    // saveTranscript();
+    sendMessage(transcript);
+  };
+
+
+
+  const resetSilenceTimer = () => {
+    clearTimeout(silenceTimer.current);
+    silenceTimer.current = setTimeout(() => {
+      console.log(transcript, "send sau 3s")
+      stopListening()
+    }, 1500);
+  };
+
+  useEffect(() => {
+    if (transcript && isListening) {
+      resetSilenceTimer();
+    }
+  }, [transcript, isListening]);
+
+  useEffect(() => {
+    const handleEnd = () => {
+      if (isListening) {
+        SpeechRecognition.startListening({ language: 'vi-VN', continuous: true });
+      }
+    };
+
+    // Đăng ký sự kiện end khi component mount
+    SpeechRecognition.getRecognition().onend = handleEnd;
+
+    // Hủy đăng ký khi component unmount
+    return () => {
+      SpeechRecognition.getRecognition().onend = null;
+    };
+  }, [isListening]);
+
+  useEffect(() => {
+    if(messages.length > 1 && messages[messages.length - 1].sender === 'bot' && isListening && messages[messages.length - 1].isReply) {
+      console.log("tiep tuc hoi thoai")
+      startListening()
+    }
+  },[messages, isListening])
 
   useEffect(() => {
     socket.on('connect', () => {
@@ -25,13 +94,13 @@ const ChatPage = () => {
     });
 
     socket.on('receive_message', (data) => {
-      console.log(data.message, "data")
       setMessages((prevMessages) => [...prevMessages].map((ms, idx) => {
         if (idx === prevMessages.length - 1) {
-          return { ...ms, text: data.message }
+          return { ...ms, text: data.message, isReply: true }
         }
         return ms
       }));
+      console.log("ua sao ko vao")
     })
 
     return () => {
@@ -49,7 +118,7 @@ const ChatPage = () => {
 
   const sendMessage = (userMessage: string) => {
     if (userMessage.trim() === '') return;
-    setMessages((prevMessages) => [...prevMessages, { sender: 'user', text: userMessage, id: uuidv4() }, { sender: 'bot', text: 'Vpbank Copilot đang trả lời bạn...', id: uuidv4() }]);
+    setMessages((prevMessages) => [...prevMessages, { sender: 'user', text: userMessage, id: uuidv4() }, { sender: 'bot', text: '', id: uuidv4(), isReply: false }]);
 
     socket.emit('send_message', {
       message: userMessage,
@@ -59,17 +128,36 @@ const ChatPage = () => {
   }
 
   return (
-    <div className="main-chat h-[100vh] px-[20px] py-[30px] overflow-auto">
+    <div className="main-chat h-[100vh] overflow-auto">
       {/* <div className="w-full">
         <h2 style={{ width: "100%", fontSize: "32px", marginTop: "1rem", lineHeight: "43.88px", fontWeight: 600, color: "#0C7A2D" }}>VPBANK ChatBot Supporter</h2>
       </div> */}
-      <div className="desktop:w-1/2 final-block min-h-[500px] desktop:min-h-[auto] w-full flex-col overflow-auto">
+      <div className="hidden desktop:w-1/5 desktop:flex desktop:flex-col desktop:justify-between h-[100vh]">
+        <div className="flex flex-col">
+          <div className="flex px-[45px] py-[1rem]">
+            <img src="/vpbank-logo.png" />
+          </div>
+          <div onClick={() => setChooseTab('chat')} className={`subnav-item ${chooseTab === "chat" && "bg-[#F9F9F9] rounded-lg text-[#0F6D5E] font-[800]"} hover:bg-[#F9F9F9] hover:rounded-lg hover:text-[#0F6D5E] text-[14px] hover:font-[800] lead-[15px] cursor-pointer mx-[2rem] flex px-[12px] items-center justify-start gap-3 py-[1rem]`}>
+            <IconChat rootColor={chooseTab === 'chat' ? "#0F6D5E" : "#525252"} />
+            <div>New chat</div>
+          </div>
+          <div onClick={() => setChooseTab('favorite')} className={`subnav-item ${chooseTab === "favorite" && "bg-[#F9F9F9] rounded-lg text-[#0F6D5E] font-[800]"} hover:bg-[#F9F9F9] hover:rounded-lg hover:text-[#0F6D5E] text-[14px] hover:font-[800] lead-[15px] cursor-pointer mx-[2rem] flex px-[12px] items-center justify-start gap-3 py-[1rem]`}>
+            <IconLike rootColor={chooseTab === 'favorite' ? "#0F6D5E" : "#525252"} />
+            <div>Favorite Answer</div>
+          </div>
+          <div onClick={() => setChooseTab('setting')} className={`subnav-item ${chooseTab === "setting" && "bg-[#F9F9F9] rounded-lg text-[#0F6D5E] font-[800]"}  hover:bg-[#F9F9F9] hover:rounded-lg hover:text-[#0F6D5E] text-[14px] hover:font-[800] lead-[15px] cursor-pointer mx-[2rem] flex px-[12px] items-center justify-start gap-3 py-[1rem]`}>
+            <IconSetting rootColor={chooseTab === 'setting' ? "#0F6D5E" : "#525252"} />
+            <div>Setting</div>
+          </div>
+        </div>
+        <div onClick={logout} className="subnav-item mb-5 hover:bg-[#F9F9F9] hover:rounded-lg hover:text-[#0F6D5E] text-[14px] hover:font-[800] lead-[15px] cursor-pointer mx-[2rem] flex px-[12px] items-center justify-start gap-3 py-[1rem]">
+          <IconLogout />
+          <div>Logout</div>
+        </div>
+      </div>
+      <div className="desktop:w-2/3 final-block min-h-[500px] desktop:min-h-[auto] h-[100vh] w-full flex-col overflow-auto">
         <div className="flex justify-between w-full bg-[#F6F6F6] py-[1rem] px-[2rem] head-chat">
           <div className="hidden desktop:flex gap-2 items-center text-[#094138] text-[20px] font-[500]">
-            <svg width={20} height={20} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M17.5 1.25C18.1904 1.25 18.75 1.80964 18.75 2.5V12.5C18.75 13.1904 18.1904 13.75 17.5 13.75H14.375C13.5881 13.75 12.8471 14.1205 12.375 14.75L10 17.9167L7.625 14.75C7.15286 14.1205 6.41189 13.75 5.625 13.75H2.5C1.80964 13.75 1.25 13.1904 1.25 12.5V2.5C1.25 1.80964 1.80964 1.25 2.5 1.25H17.5ZM2.5 0C1.11929 0 0 1.11929 0 2.5V12.5C0 13.8807 1.11929 15 2.5 15H5.625C6.01845 15 6.38893 15.1852 6.625 15.5L9 18.6667C9.5 19.3333 10.5 19.3333 11 18.6667L13.375 15.5C13.6111 15.1852 13.9816 15 14.375 15H17.5C18.8807 15 20 13.8807 20 12.5V2.5C20 1.11929 18.8807 0 17.5 0H2.5Z" fill="#0F6D5E" />
-              <path d="M3.75 4.375C3.75 4.02982 4.02982 3.75 4.375 3.75H15.625C15.9702 3.75 16.25 4.02982 16.25 4.375C16.25 4.72018 15.9702 5 15.625 5H4.375C4.02982 5 3.75 4.72018 3.75 4.375ZM3.75 7.5C3.75 7.15482 4.02982 6.875 4.375 6.875H15.625C15.9702 6.875 16.25 7.15482 16.25 7.5C16.25 7.84518 15.9702 8.125 15.625 8.125H4.375C4.02982 8.125 3.75 7.84518 3.75 7.5ZM3.75 10.625C3.75 10.2798 4.02982 10 4.375 10H10.625C10.9702 10 11.25 10.2798 11.25 10.625C11.25 10.9702 10.9702 11.25 10.625 11.25H4.375C4.02982 11.25 3.75 10.9702 3.75 10.625Z" fill="#0F6D5E" />
-            </svg>
             Artificial Intelligence
             <span className="font-[800]">Assistant</span>
           </div>
@@ -77,8 +165,13 @@ const ChatPage = () => {
             AI
             <span className="font-[800]">&nbsp;Assistant</span>
           </div>
-          <div className="hidden items-center desktop:flex italic font-[600] text-[#094138]">
-            {/* Phòng hành chính nhân sự */}
+          <div className="select-role-container hidden items-center desktop:flex italic font-[600] text-white">
+            <select className="select-role text-[13px] pl-[1rem] pr-[36px] py-[8px] rounded bg-[#0F6D5E]" style={{ appearance: "none" }}>
+              <option>Phòng hành chính nhân sự</option>
+              <option>Phòng kế toán</option>
+              <option>Phòng IT</option>
+            </select>
+
           </div>
         </div>
         {/* <div className="w-full">
@@ -113,16 +206,35 @@ const ChatPage = () => {
               onChange={(e) => setUserMessage(e.target.value)}
               onKeyUp={(e) => e.key === 'Enter' && sendMessage(userMessage)}
             />
-            <button type="button" className="bg-[#0F6D5E] rounded-[4px] px-[12px]" onClick={() =>sendMessage(userMessage)} >
+            <button type="button" className="bg-[#0F6D5E] rounded-[4px] px-[12px]" onClick={() => sendMessage(userMessage)} >
               <svg width={20} height={20} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M16.6357 13.6701L18.3521 8.5208C19.8516 4.02242 20.6013 1.77322 19.414 0.585953C18.2268 -0.601315 15.9776 0.148415 11.4792 1.64788L6.32987 3.36432C2.69923 4.57453 0.883919 5.17964 0.368059 6.06698C-0.122686 6.91112 -0.122686 7.95369 0.368058 8.79783C0.883919 9.68518 2.69923 10.2903 6.32987 11.5005C6.77981 11.6505 7.28601 11.5434 7.62294 11.2096L13.1286 5.75495C13.4383 5.44808 13.9382 5.45041 14.245 5.76015C14.5519 6.06989 14.5496 6.56975 14.2398 6.87662L8.82312 12.2432C8.45175 12.6111 8.3342 13.1742 8.49951 13.6701C9.70971 17.3007 10.3148 19.1161 11.2022 19.6319C12.0463 20.1227 13.0889 20.1227 13.933 19.6319C14.8204 19.1161 15.4255 17.3008 16.6357 13.6701Z" fill="white" />
               </svg>
             </button>
+            <button onClick={isListening ? () => { stopListening(); setIsListening(false) } : startListening}>{isListening ? "🛑 Dừng" : "🎤 Bắt đầu nói"}</button>
+            <button onClick={resetTranscript}>🔄 Reset</button>
           </div>
         </div>
 
       </div>
-    </div>
+      <div className="hidden desktop:w-1/5 desktop:flex desktop:flex-col h-[100vh]">
+        <div className="text-[#525252] font-[700] text-[20px] lead-[21px] py-[1.5rem] px-[1rem]">
+          History
+        </div>
+        <div>
+          {[{ date: "18/01/2024", title: "Tuyển dụng nhân sự tháng 11/2024 theo quyết định của Hội Đồng Quản Trị VpBank" }, { date: "18/01/2024", title: "Nghỉ việc" }, { date: "18/01/2024", title: "Nhân sự" }].map(chat => (
+            <div key={chat.title + chat.date} className="hover:bg-[#F9F9F9] px-[1rem] py-[.5rem] cursor-pointer">
+              <div className="text-[#A0A0A0] text-[12px] font-[500]">
+                {chat.date}
+              </div>
+              <div className="text-[#525252] text-[13px] font-[600] leading-[17px]">
+                {chat.title}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div >
   )
 };
 

@@ -29,7 +29,7 @@ export interface InitialState {
   getUserInformation: () => Promise<{ success: boolean; message: string }>;
 }
 
-export const useUserStore = create<
+export const useChatStore = create<
   InitialState,
   [["zustand/persist", { access_token, is_logged }]]
 >(

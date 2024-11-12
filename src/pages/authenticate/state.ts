@@ -28,6 +28,7 @@ export interface InitialState {
     password: string;
   }) => Promise<{ success: boolean; message: string }>;
   getUserInformation: () => Promise<{ success: boolean; message: string }>;
+  logout: () => void;
 }
 
 function renderUser(username: 'vpbank_admin' | 'vpbank_hr' | 'vpbank_it' | string) {
@@ -108,6 +109,9 @@ export const useUserStore = create<
           return { success: false, message: "Có lỗi xảy ra" };
         }
       },
+      logout: () => {
+        set(() => ({is_logged: false, user: null, access_token: null}))
+      }
     }),
     {
       name: "auth_storage",

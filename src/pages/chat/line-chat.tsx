@@ -20,7 +20,7 @@ const LineChat = memo(({ msg }: Props) => {
 
     useEffect(() => {
         hljs.highlightAll();
-      }, [msg]);
+    }, [msg]);
 
     useEffect(() => {
         if (msg && msg.sender === 'bot') {
@@ -90,11 +90,16 @@ const LineChat = memo(({ msg }: Props) => {
                     className="markdown-container w-full desktop:w-[50%]"
                 />
             }
-            return <div key={idx} className="markdown-container">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {d}
-                </ReactMarkdown>
-            </div>
+
+            // if (msg.sender === 'user') {
+                return <div key={idx} className="markdown-container">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {d}
+                    </ReactMarkdown>
+                </div>
+            // }
+
+            // return <TypingEffect text={d} />
         })
 
     }
@@ -126,3 +131,31 @@ const LineChat = memo(({ msg }: Props) => {
 })
 
 export default LineChat
+
+const TypingEffect = ({ text, typingSpeed = 10 }) => {
+    const [displayedText, setDisplayedText] = useState('');
+
+    useEffect(() => {
+        if (text && text.length > 0) {
+            let i = 0;
+            const intervalId = setInterval(() => {
+                setDisplayedText((prev) => { console.log(prev, "prev"); return prev + text[i] });
+                i++;
+                if (i === text.length) {
+                    clearInterval(intervalId); // Dừng lại khi gõ hết chữ
+                }
+            }, typingSpeed); // Tốc độ gõ chữ
+
+            return () => clearInterval(intervalId); // Cleanup khi component unmount
+        }
+
+
+    }, [text, typingSpeed]);
+
+    return <div className="markdown-container">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {displayedText}
+        </ReactMarkdown>
+    </div>
+};
+

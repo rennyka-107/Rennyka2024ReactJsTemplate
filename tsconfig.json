@@ -13,5 +13,5 @@
         "@assets/*": ["public/assets/*"]
       },
     },
-    "include": ["src", "vite.config.*"],
+    "include": ["src", "vite.config.*", "src/components/Icon/.tsx"],
   }
