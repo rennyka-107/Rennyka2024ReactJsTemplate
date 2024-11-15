@@ -9,10 +9,11 @@ import IconLike from "@/components/Icon/like";
 import IconSetting from "@/components/Icon/setting";
 import IconLogout from "@/components/Icon/logout";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
+import { flushSync } from 'react-dom'
 
 // const socket = io("http://192.168.1.222:8111", {
 const socket = io("wss://apivpb.vtrusted.vn", {
-// const socket = io("http://210.245.49.84:8111", {
+  // const socket = io("http://210.245.49.84:8111", {
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,
   timeout: 300000,
@@ -20,7 +21,7 @@ const socket = io("wss://apivpb.vtrusted.vn", {
 })
 
 const ChatPage = () => {
-  const [messages, setMessages] = useState<{ sender: 'bot' | 'user', text: string, id: string, isReply?: boolean }[]>([]);
+  const [messages, setMessages] = useState<{ sender: 'bot' | 'user', text: string, code: string, id: string, isReply?: boolean }[]>([]);
   const [userMessage, setUserMessage] = useState('');
   const [chooseTab, setChooseTab] = useState<'chat' | 'favorite' | 'setting'>('chat')
   const { user, logout } = useUserStore();
@@ -82,31 +83,51 @@ const ChatPage = () => {
   }, [isListening]);
 
   useEffect(() => {
-    if(messages.length > 1 && messages[messages.length - 1].sender === 'bot' && isListening && messages[messages.length - 1].isReply) {
+    if (messages.length > 1 && messages[messages.length - 1].sender === 'bot' && isListening && messages[messages.length - 1].isReply) {
       console.log("tiep tuc hoi thoai")
       startListening()
     }
-  },[messages, isListening])
+  }, [messages, isListening])
 
-  useEffect(() => {
-    socket.on('connect', () => {
-      console.log("Connected to server!");
-    });
+  // useEffect(() => {
+  //   socket.on('connect', () => {
+  //     console.log("Connected to server!");
+  //   });
 
-    socket.on('receive_message', (data) => {
-      setMessages((prevMessages) => [...prevMessages].map((ms, idx) => {
-        if (idx === prevMessages.length - 1) {
-          return { ...ms, text: data.message, isReply: true }
-        }
-        return ms
-      }));
-      console.log("ua sao ko vao")
-    })
+  //   socket.on('receive_message', (data) => {
+  //     setMessages((prevMessages) => [...prevMessages].map((ms, idx) => {
+  //       if (idx === prevMessages.length - 1) {
+  //         return { ...ms, text: data.message, isReply: true }
+  //       }
+  //       return ms
+  //     }));
+  //     console.log("ua sao ko vao")
+  //   })
 
-    return () => {
-      socket.disconnect();
-    }
-  }, []);
+  //   return () => {
+  //     socket.disconnect();
+  //   }
+  // }, []);
+
+  // useEffect(() => {
+  //   socket.on('connect', () => {
+  //     console.log("Connected to server!");
+  //   });
+
+  //   socket.on('receive_code', (data) => {
+  //     console.log(data.message, "codevccluon")
+  //     setMessages((prevMessages) => [...prevMessages].map((ms, idx) => {
+  //       if (idx === prevMessages.length - 1) {
+  //         return { ...ms, code: data.message }
+  //       }
+  //       return ms
+  //     }));
+  //   })
+
+  //   return () => {
+  //     socket.disconnect();
+  //   }
+  // }, []);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -116,15 +137,46 @@ const ChatPage = () => {
     }
   }, [messages])
 
-  const sendMessage = (userMessage: string) => {
+  const sendMessage = async (userMessage: string) => {
+    setUserMessage('');
     if (userMessage.trim() === '') return;
-    setMessages((prevMessages) => [...prevMessages, { sender: 'user', text: userMessage, id: uuidv4() }, { sender: 'bot', text: '', id: uuidv4(), isReply: false }]);
-
-    socket.emit('send_message', {
+    setMessages((prevMessages) => [...prevMessages, { sender: 'user', text: userMessage, id: uuidv4(), code: '' }, { sender: 'bot', code: '', text: 'VpBank Ai đang trả lời ...', id: uuidv4(), isReply: false }]);
+    socket.emit('send_code', {
       message: userMessage,
     });
+    const response = await fetch(`https://apivpb.vtrusted.vn/chat-stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/event-stream'
+      },
+      body: JSON.stringify({ question: userMessage })
+    });
 
-    setUserMessage('');
+    const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+
+    while (true) {
+      const { value, done } = await reader.read()
+      if (done) break;
+      const cleanedValue = value.replace(/^data: /, '');
+      setMessages((prevMessages) => {
+        const lastMessageIndex = prevMessages.length - 1;
+        const updatedMessages = [...prevMessages];
+        updatedMessages[lastMessageIndex] = {
+          ...updatedMessages[lastMessageIndex],
+          text: updatedMessages[lastMessageIndex].text !== "VpBank Ai đang trả lời ..." ? updatedMessages[lastMessageIndex].text + cleanedValue : cleanedValue,
+          isReply: true,
+        };
+        return updatedMessages;
+      }
+        // prevMessages.map((ms, idx) => {
+        //   if (idx === prevMessages.length - 1) {
+        //     return { ...ms, text: ms.text + value, isReply: true };
+        //   }
+        //   return ms;
+        // })
+      );
+
+    }
   }
 
   return (

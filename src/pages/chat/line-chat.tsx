@@ -99,7 +99,6 @@ const LineChat = memo(({ msg }: Props) => {
                 </div>
             // }
 
-            // return <TypingEffect text={d} />
         })
 
     }
