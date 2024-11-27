@@ -44,7 +44,12 @@ function renderUser(username: 'vpbank_admin' | 'vpbank_hr' | 'vpbank_it' | strin
       }
     case 'vpbank_hr':
       return {
-        name: "Human Resources Admin", role: "hr", faqs: []
+        name: "Human Resources Admin", role: "hr", faqs: [
+          'Hiện công ty có bao nhiêu nhân sự.',
+          'Thống kê cho tôi biết số lượng và tỷ lệ nhân sự theo thâm niên: > 10 năm, 5-10 năm, 3-5 năm, 2-3 năm, 1-2 năm, < 1 năm.',
+          'Cho tôi biết số lượng và tỷ lệ nhân sự nghỉ việc tự nguyện.',
+          'Vẽ cho tôi biểu đồ thể hiện số lượng và tỷ lệ giới tính nhân sự mới được tuyển dụng.'
+        ]
       }
     case 'vpbank_it':
       return {
@@ -110,7 +115,7 @@ export const useUserStore = create<
         }
       },
       logout: () => {
-        set(() => ({is_logged: false, user: null, access_token: null}))
+        set(() => ({ is_logged: false, user: null, access_token: null }))
       }
     }),
     {

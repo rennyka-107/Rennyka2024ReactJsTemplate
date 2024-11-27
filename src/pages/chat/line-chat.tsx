@@ -3,27 +3,68 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/atom-one-dark.css';
+import { useUserStore } from '../authenticate/state';
 
 type Props = {
     msg: {
         id: string;
         sender: 'bot' | 'user',
         text: string;
-    }
+        isReply?: boolean;
+        question?: string;
+        question_id?: string;
+        is_like: boolean;
+    },
+    setMessage: Function;
+    setCallFarvoriteQuestion: Function;
 }
 
-const LineChat = memo(({ msg }: Props) => {
+const LineChat = memo(({ msg, setMessage, setCallFarvoriteQuestion }: Props) => {
 
     const [headScripts, setHeadScripts] = useState([]);
     const [inlineHeadScripts, setInlineHeadScripts] = useState([]);
     const [bodyScripts, setBodyScripts] = useState([]);
+    const { user } = useUserStore();
+
+    // console.log(user, "user")
 
     useEffect(() => {
-        hljs.highlightAll();
-    }, [msg]);
+        if (msg.isReply) {
+            hljs.highlightAll();
+            fetch('https://apivpb.vtrusted.vn/add-to-history', {
+                method: "POST",
+                body: JSON.stringify({
+                    data: msg,
+                    role: user.role,
+                    id: msg.id
+                })
+            }).then(res => res.json).then(res => { console.log("Them bot answer vao lich su chat") })
+        }
+
+    }, [msg.isReply]);
+
+    function like_answer(like: boolean) {
+        setMessage((prevMessages) => {
+            const lastMessageIndex = prevMessages.findIndex(ms => ms.id === msg.id);
+            const updatedMessages = [...prevMessages];
+            updatedMessages[lastMessageIndex] = {
+                ...updatedMessages[lastMessageIndex],
+                is_like: like
+            };
+            return updatedMessages;
+        }
+        );
+        fetch('https://apivpb.vtrusted.vn/like', {
+            method: "POST",
+            body: JSON.stringify({
+                answer_id: msg.id,
+                is_like: like
+            })
+        }).then(res => res.json).then(res => {setTimeout(() => setCallFarvoriteQuestion((pre) => pre + 1), 2000); console.log("Da like thanh cong") })
+    }
 
     useEffect(() => {
-        if (msg && msg.sender === 'bot') {
+        if (msg && msg.sender === 'bot' && msg.text && msg.isReply) {
             const headContent = msg.text?.match(/<head[^>]*>([\s\S]*?)<\/head>/i)?.[1] || "";
             const bodyContent = msg.text?.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] || "";
 
@@ -72,7 +113,7 @@ const LineChat = memo(({ msg }: Props) => {
         }
 
 
-    }, [msg])
+    }, [msg.isReply])
 
     const isHtmlDocument = (inputString: string) => {
         const htmlRegex = /^\s*<html[\s\S]*<\/html>\s*$/i;
@@ -81,7 +122,6 @@ const LineChat = memo(({ msg }: Props) => {
 
     const renderResponse = () => {
         const data = msg.text.split(/(<html[\s\S]*?<\/html>)/i)
-        console.log(data, "Data")
         return data.map((d, idx) => {
             if (isHtmlDocument(d)) {
                 return <div
@@ -92,11 +132,11 @@ const LineChat = memo(({ msg }: Props) => {
             }
 
             // if (msg.sender === 'user') {
-                return <div key={idx} className="markdown-container">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {d}
-                    </ReactMarkdown>
-                </div>
+            return <div key={idx} className="markdown-container">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {d}
+                </ReactMarkdown>
+            </div>
             // }
 
         })
@@ -120,41 +160,48 @@ const LineChat = memo(({ msg }: Props) => {
                 }
                 <div
                     // dangerouslySetInnerHTML={{ __html: msg.text }}
-                    className={`max-w-full w-[fit-content] flex items-center flex-col ${msg.sender === 'bot' ? "bg-white" : "bg-[#F8F9FB]"} rounded-[8px] desktop:px-[16px] px-[8px] ${msg.sender === 'bot' ? "py-[8px] pt-0" : "py-[8px]"} font-[500]`}>
+                    className={`max-w-full w-[fit-content] flex items-start flex-col ${msg.sender === 'bot' ? "bg-white" : "bg-[#F8F9FB]"} rounded-[8px] desktop:px-[16px] px-[8px] ${msg.sender === 'bot' ? "py-[8px] pt-0" : "py-[8px]"} font-[500]`}>
                     {/* {msg.text} */}
                     {renderResponse()}
+                    {msg.sender === 'bot' && <div onClick={() => like_answer(!msg.is_like)} className={`cursor-pointer flex-1 ${msg.is_like ? "bg-[#EBFED7]" : "bg-[white]"} hover:bg-[#EBFED7] max-w-[38px] max-h-[38px] min-w-[38px] min-h-[38px] flex justify-center items-center`}>
+                        <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path className={`${msg.is_like ? "fill-[#0F6D5E]" : "fill-[black]"} hover:fill-[#0F6D5E]`} fillRule="evenodd" clipRule="evenodd" d="M3.74973 2.9494C2.64374 3.45496 1.8335 4.65743 1.8335 6.09134C1.8335 7.55627 2.43297 8.68543 3.29235 9.65312C4.00065 10.4507 4.85805 11.1117 5.69425 11.7563C5.89285 11.9095 6.09026 12.0617 6.28419 12.2145C6.63488 12.491 6.94771 12.7336 7.24924 12.9098C7.55092 13.0861 7.79376 13.1666 8.00016 13.1666C8.20656 13.1666 8.4494 13.0861 8.75109 12.9098C9.05261 12.7336 9.36544 12.491 9.71613 12.2145C9.91006 12.0617 10.1075 11.9095 10.3061 11.7563C11.1423 11.1117 11.9997 10.4507 12.708 9.65312C13.5674 8.68543 14.1668 7.55627 14.1668 6.09134C14.1668 4.65743 13.3566 3.45496 12.2506 2.9494C11.1761 2.45826 9.73239 2.58832 8.36041 4.01376C8.26615 4.11169 8.13608 4.16703 8.00016 4.16703C7.86424 4.16703 7.73418 4.11169 7.63992 4.01376C6.26794 2.58832 4.82421 2.45826 3.74973 2.9494ZM8.00016 2.97248C6.45879 1.59344 4.7328 1.40052 3.334 2.03991C1.85664 2.71522 0.833496 4.28329 0.833496 6.09134C0.833496 7.86836 1.57383 9.22397 2.54464 10.3171C3.32208 11.1926 4.27364 11.9252 5.11405 12.5723C5.30455 12.719 5.48935 12.8613 5.66511 12.9999C6.0066 13.2691 6.37319 13.5561 6.74471 13.7732C7.11607 13.9902 7.5399 14.1666 8.00016 14.1666C8.46043 14.1666 8.88426 13.9902 9.25561 13.7732C9.62713 13.5561 9.99373 13.2691 10.3352 12.9999C10.511 12.8613 10.6958 12.719 10.8863 12.5723C11.7267 11.9252 12.6782 11.1926 13.4557 10.3171C14.4265 9.22397 15.1668 7.86836 15.1668 6.09134C15.1668 4.28329 14.1437 2.71522 12.6663 2.03991C11.2675 1.40052 9.54153 1.59344 8.00016 2.97248Z" />
+                        </svg>
+                    </div>}
                 </div>
+
             </div>
+
         </div>
     )
 })
 
 export default LineChat
 
-const TypingEffect = ({ text, typingSpeed = 10 }) => {
-    const [displayedText, setDisplayedText] = useState('');
+// const TypingEffect = ({ text, typingSpeed = 10 }) => {
+//     const [displayedText, setDisplayedText] = useState('');
 
-    useEffect(() => {
-        if (text && text.length > 0) {
-            let i = 0;
-            const intervalId = setInterval(() => {
-                setDisplayedText((prev) => { console.log(prev, "prev"); return prev + text[i] });
-                i++;
-                if (i === text.length) {
-                    clearInterval(intervalId); // Dừng lại khi gõ hết chữ
-                }
-            }, typingSpeed); // Tốc độ gõ chữ
+//     useEffect(() => {
+//         if (text && text.length > 0) {
+//             let i = 0;
+//             const intervalId = setInterval(() => {
+//                 setDisplayedText((prev) => { console.log(prev, "prev"); return prev + text[i] });
+//                 i++;
+//                 if (i === text.length) {
+//                     clearInterval(intervalId); // Dừng lại khi gõ hết chữ
+//                 }
+//             }, typingSpeed); // Tốc độ gõ chữ
 
-            return () => clearInterval(intervalId); // Cleanup khi component unmount
-        }
+//             return () => clearInterval(intervalId); // Cleanup khi component unmount
+//         }
 
 
-    }, [text, typingSpeed]);
+//     }, [text, typingSpeed]);
 
-    return <div className="markdown-container">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {displayedText}
-        </ReactMarkdown>
-    </div>
-};
+//     return <div className="markdown-container">
+//         <ReactMarkdown remarkPlugins={[remarkGfm]}>
+//             {displayedText}
+//         </ReactMarkdown>
+//     </div>
+// };
 
